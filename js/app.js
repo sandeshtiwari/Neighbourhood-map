@@ -42,6 +42,14 @@ function initMap() {
  		animation: google.maps.Animation.DROP,
  		icon: defaultIcon
  	});
+  // Two event listeners - one for mouseover, one for mouseout,
+  // to change the colors back and forth.
+  this.marker.addListener('mouseover', function() {
+    this.setIcon(highlightedIcon);
+  });
+  this.marker.addListener('mouseout', function() {
+    this.setIcon(defaultIcon);
+  });
  }
 
  // This function takes in a COLOR, and then creates a new marker
