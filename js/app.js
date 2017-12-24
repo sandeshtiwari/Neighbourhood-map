@@ -6,8 +6,8 @@ var locations = [
           {title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}},
           {title: 'Union Square Open Floor Plan', location: {lat: 40.7347062, lng: -73.9895759}},
           {title: 'East Village Hip Studio', location: {lat: 40.7281777, lng: -73.984377}},
-          {title: 'TriBeCa Artsy Bachelor Pad', location: {lat: 40.7195264, lng: -74.0089934}},
-          {title: 'Chinatown Homey Space', location: {lat: 40.7180628, lng: -73.9961237}}
+          {title: 'Empire state building', location: {lat: 40.748441, lng: -73.985664}},
+          {title: 'Trump Tower', location: {lat: 40.762428, lng: -73.973794}}
         ];
 function initMap() {
 	map = new google.maps.Map(document.getElementById('map'), {
@@ -29,7 +29,6 @@ function initMap() {
  	});
  }
  var LocationMarker = function(locData){
- 	console.log(locData.location);
   var self = this;
  	this.title = locData.title;
  	this.position = locData.position;
@@ -42,6 +41,28 @@ function initMap() {
  		animation: google.maps.Animation.DROP,
  		icon: defaultIcon
  	});
+  var clientID = 'QUP4T0TYAOJXCZXPDJ2CLHZWSAJFNN41YFTFSHHQJJGOWHTG';
+  var clientSecret = 'TZGXJWQA3G20CXT0BFL11ZR0SYLJ3YSY30OWUDYAXXOJB031';
+
+  // get JSON request of foursquare data
+  var URL = 'https://api.foursquare.com/v2/venues/search?ll=' + locData.location.lat + ',' + locData.location.lng + '&client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20160118' + '&query=' + locData.title;
+
+  $.getJSON(URL).done(function(data) {
+    //self.street = data.response.venues[0].location.formattedAddress[0] ? data.response.venues[0].location.formattedAddress[0]: 'N/A';
+    if(data.response.venues[0].location.formattedAddress[0] !== undefined)
+        self.street = data.response.venues[0].location.formattedAddress[0];
+    else
+        self.street = 'N/A';
+    if(data.response.venues[0].location.formattedAddress[1] !== undefined)
+      self.city = data.response.venues[0].location.formattedAddress[1];
+    else 
+      self.city = 'N/A';
+    self.phone = data.response.venues[0].contact.formattedPhone ? data.response.venues[0].contact.formattedPhone : 'N/A';
+    if (typeof self.phone === 'undefined')
+      self.phone = "N/A";
+    }).fail(function() {
+        alert('Error with Foursquare. Please try again');
+});
   // Two event listeners - one for mouseover, one for mouseout,
   // to change the colors back and forth.
   this.marker.addListener('mouseover', function() {
@@ -50,7 +71,30 @@ function initMap() {
   this.marker.addListener('mouseout', function() {
     this.setIcon(defaultIcon);
   });
+  this.marker.addListener('click', function() {
+    populateInfoWindow(this, self.street, self.city, self.phone, infoWindow);
+  });
  }
+
+ function populateInfoWindow(marker, street, city, phone, infowindow) {
+    // Check to make sure the infowindow is not already opened on this marker.
+    if (infowindow.marker != marker) {
+        // Clear the infowindow content to give the streetview time to load.
+        infowindow.setContent('');
+        infowindow.marker = marker;
+
+        // Make sure the marker property is cleared if the infowindow is closed.
+        infowindow.addListener('closeclick', function() {
+            infowindow.marker = null;
+        });
+       var content = '<h4>' + marker.title + '</h4>' + 
+            '<p>' + street + "<br>" + city + '<br>' + phone + "</p>";
+        infowindow.setContent(content);
+        // Open the infowindow.
+        infowindow.open(map, marker);  
+        }
+        
+}
 
  // This function takes in a COLOR, and then creates a new marker
       // icon of that color. The icon will be 21 px wide by 34 high, have an origin
