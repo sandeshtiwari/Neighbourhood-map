@@ -44,6 +44,7 @@ function initMap() {
         return check;
       });
     }
+    return self.places();
   },self);
  }
  var LocationMarker = function(locData){
