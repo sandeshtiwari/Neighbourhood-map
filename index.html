@@ -10,7 +10,12 @@
 	<link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
-	<div class='container-fluid'>
+	<nav class='navbar'>
+		<form class='navbar-form'>
+			<input type='text' class='form-control' placeholder='Type here to filter' data-bind="textInput: searchValue, valueUpdate: 'afterkeydown'">
+		</form>
+	</nav>
+	<main class='container-fluid'>
 		<div class='row flex-xl-nowrap'>
 			<aside class='col-12 col-md-3 bd-sidebar container'>
 				<div data-bind = 'foreach: places'>
@@ -19,7 +24,7 @@
 			</aside>
 			<div class='col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content' role='main' id='map'></div>
 		</div>
-	</div>
+	</main>
 
 
 	<!-- Js files used -->

@@ -23,11 +23,28 @@ function initMap() {
  var ViewModel = function(){
  	var self = this;
  	this.places = ko.observableArray([]);
-
+  this.searchValue = ko.observable('');
  	//adding location markers for all the locations
  	locations.forEach(function(place){
  		self.places.push(new LocationMarker(place));
  	});
+
+  this.filterLocation = ko.computed(function(){
+    var searchWord = self.searchValue().toLowerCase();
+    if(!searchWord){
+      self.places().forEach(function(place){
+        place.displayCheck(true);
+      });
+    }
+    else{
+      return ko.utils.arrayFilter(self.places(), function(place){
+        var placeTitle = place.title.toLowerCase();
+        var check = placeTitle.includes(searchWord);
+        place.displayCheck(check);
+        return check;
+      });
+    }
+  },self);
  }
  var LocationMarker = function(locData){
   var self = this;
@@ -35,6 +52,7 @@ function initMap() {
  	this.position = locData.position;
  	var defaultIcon = makeMarkerIcon('0091ff');
  	var highlightedIcon = makeMarkerIcon('FFFF24');
+  this.displayCheck = ko.observable(true);
  	this.marker = new google.maps.Marker({
  		position : locData.location,
  		title: locData.title,
@@ -83,6 +101,16 @@ function initMap() {
           self.marker.setAnimation(null);
           }, 2150);
   };
+  //observable to diplay all the markers with the displayCheck true
+  self.filterMarkers = ko.computed(function () {
+        if(self.displayCheck() === true) {
+            self.marker.setMap(map);
+            bounds.extend(self.marker.position);
+            map.fitBounds(bounds);
+        } else {
+            self.marker.setMap(null);
+        }
+});
  }
 
  function populateInfoWindow(marker, street, city, phone, infowindow) {
