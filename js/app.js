@@ -93,14 +93,12 @@ function initMap() {
   });
   this.marker.addListener('click', function() {
     populateInfoWindow(this, self.street, self.city, self.phone, infoWindow);
+    bounceMarker();
   });
   // show item info when selected from list
   this.showInfo = function(location) {
-        google.maps.event.trigger(self.marker, 'click');
-        self.marker.setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function(){ 
-          self.marker.setAnimation(null);
-          }, 2150);
+      google.maps.event.trigger(self.marker, 'click');
+      bounceMarker();
   };
   //observable to diplay all the markers with the displayCheck true
   self.filterMarkers = ko.computed(function () {
@@ -111,7 +109,14 @@ function initMap() {
         } else {
             self.marker.setMap(null);
         }
-});
+  });
+  //bouce the marker
+  var bounceMarker = function(){
+    self.marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function(){ 
+          self.marker.setAnimation(null);
+          }, 2150);
+  }
  }
 
  function populateInfoWindow(marker, street, city, phone, infowindow) {
