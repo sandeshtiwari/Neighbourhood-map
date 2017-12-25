@@ -11,13 +11,13 @@
 </head>
 <body>
 	<nav class='navbar'>
-		<form class='navbar-form'>
+		<form>
 			<input type='text' class='form-control' placeholder='Type here to filter' data-bind="textInput: searchValue, valueUpdate: 'afterkeydown'">
 		</form>
 	</nav>
 	<main class='container-fluid'>
 		<div class='row flex-xl-nowrap'>
-			<aside class='col-12 col-md-3 bd-sidebar container'>
+			<aside class='col-12 col-md-3 bd-sidebar'>
 				<div data-bind = 'foreach: filterLocation'>
 					<p><a href="#" data-bind='text: title, click: showInfo'></a></p>
 				</div>
@@ -31,7 +31,7 @@
 	<script src="js/app.js"></script>
 	<script src="js/lib/knockout-3.2.0.js"></script>
 	<script
-        src="https://maps.googleapis.com/maps/api/js?libraries=geometry,drawing&key=AIzaSyCw3Ny6LNSL-NHjhJpVI-uALYjJDVr9Jao&v=3&callback=initMap" async defer>
+        src="https://maps.googleapis.com/maps/api/js?libraries=geometry,drawing&key=AIzaSyCw3Ny6LNSL-NHjhJpVI-uALYjJDVr9Jao&v=3&callback=initMap" async defer onerror="error()">
     </script>
 </body>
 </html>

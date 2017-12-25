@@ -216,5 +216,8 @@ function initMap() {
           }
         ];
       }
+      function error(){
+        alert("Error occured with Google Maps. Please try again.")
+      }
 
 
