@@ -1,6 +1,8 @@
+// global variables
 var map;
 var infoWindow;
 var bounds;
+// locations to be displayed on the map
 var locations = [
           {title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
           {title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}},
@@ -9,7 +11,9 @@ var locations = [
           {title: 'Empire state building', location: {lat: 40.748441, lng: -73.985664}},
           {title: 'Trump Tower', location: {lat: 40.762428, lng: -73.973794}}
         ];
+// initial function to initialize the map and apply the knockout bindings
 function initMap() {
+  // creating a new map in a particular location
 	map = new google.maps.Map(document.getElementById('map'), {
     	center: {lat: 40.7413549, lng: -73.9980244},
         styles: getStyles(),
@@ -17,29 +21,36 @@ function initMap() {
     });
     infoWindow = new google.maps.InfoWindow();
     bounds = new google.maps.LatLngBounds();
-    //biding the ViewModel with the knockout bindings
+    //binding the ViewModel with the knockout bindings
     ko.applyBindings(new ViewModel());
  }
+ // ViewModel for the map to control the data and the view
  var ViewModel = function(){
  	var self = this;
+  // observable array for places
  	this.places = ko.observableArray([]);
+  // observable for the search value
   this.searchValue = ko.observable('');
  	//adding location markers for all the locations
  	locations.forEach(function(place){
  		self.places.push(new LocationMarker(place));
  	});
-
+  // filtering location based on the text input form the user
   this.filterLocation = ko.computed(function(){
     var searchWord = self.searchValue().toLowerCase();
+    // if nothing is typed by the user
     if(!searchWord){
       self.places().forEach(function(place){
+        // setting the display to true for all the location
         place.displayCheck(true);
       });
     }
+    // if something is typed by the user then filter the places observable array
     else{
       return ko.utils.arrayFilter(self.places(), function(place){
         var placeTitle = place.title.toLowerCase();
         var check = placeTitle.includes(searchWord);
+        // setting the display to true or false based on the input
         place.displayCheck(check);
         return check;
       });
@@ -47,13 +58,17 @@ function initMap() {
     return self.places();
   },self);
  }
+ // location marker for a given location data
  var LocationMarker = function(locData){
   var self = this;
  	this.title = locData.title;
  	this.position = locData.position;
+  // creating marker icons with a given color
  	var defaultIcon = makeMarkerIcon('0091ff');
  	var highlightedIcon = makeMarkerIcon('FFFF24');
+  // setting the displayCheck to true initially to display the marker
   this.displayCheck = ko.observable(true);
+  // creating the marker
  	this.marker = new google.maps.Marker({
  		position : locData.location,
  		title: locData.title,
@@ -61,18 +76,20 @@ function initMap() {
  		animation: google.maps.Animation.DROP,
  		icon: defaultIcon
  	});
+  // clientID and clientSecret for Foursquare API
   var clientID = 'QUP4T0TYAOJXCZXPDJ2CLHZWSAJFNN41YFTFSHHQJJGOWHTG';
   var clientSecret = 'TZGXJWQA3G20CXT0BFL11ZR0SYLJ3YSY30OWUDYAXXOJB031';
 
   // get JSON request of foursquare data
   var URL = 'https://api.foursquare.com/v2/venues/search?ll=' + locData.location.lat + ',' + locData.location.lng + '&client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20160118' + '&query=' + locData.title;
-
+  // JSON request for Foursquare API
   $.getJSON(URL).done(function(data) {
-    //self.street = data.response.venues[0].location.formattedAddress[0] ? data.response.venues[0].location.formattedAddress[0]: 'N/A';
+    //checking for undefined street address
     if(data.response.venues[0].location.formattedAddress[0] !== undefined)
         self.street = data.response.venues[0].location.formattedAddress[0];
     else
         self.street = 'N/A';
+    // checking for undefined city
     if(data.response.venues[0].location.formattedAddress[1] !== undefined)
       self.city = data.response.venues[0].location.formattedAddress[1];
     else 
@@ -81,6 +98,7 @@ function initMap() {
     if (typeof self.phone === 'undefined')
       self.phone = "N/A";
     }).fail(function() {
+        // error message if something went wrong with Foursquare 
         alert('Error with Foursquare. Please try again');
 });
   // Two event listeners - one for mouseover, one for mouseout,
@@ -92,15 +110,19 @@ function initMap() {
     this.setIcon(defaultIcon);
   });
   this.marker.addListener('click', function() {
+    // poupulated the infow window for a marker
     populateInfoWindow(this, self.street, self.city, self.phone, infoWindow);
+    // bounce the marker if it is clicked
     bounceMarker();
   });
   // show item info when selected from list
-  this.showInfo = function(location) {
+  this.showInfo = function() {
+      // trigger the marker if it is selected from the list
       google.maps.event.trigger(self.marker, 'click');
+      // bounce marker
       bounceMarker();
   };
-  //observable to diplay all the markers with the displayCheck true
+  // observable to display all the markers with the displayCheck true
   self.filterMarkers = ko.computed(function () {
         if(self.displayCheck() === true) {
             self.marker.setMap(map);
@@ -110,7 +132,7 @@ function initMap() {
             self.marker.setMap(null);
         }
   });
-  //bouce the marker
+  // bouce the marker for a certain time
   var bounceMarker = function(){
     self.marker.setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(function(){ 
@@ -118,7 +140,7 @@ function initMap() {
           }, 2150);
   }
  }
-
+ // function to populated the infowindow passed for the given marker
  function populateInfoWindow(marker, street, city, phone, infowindow) {
     // Check to make sure the infowindow is not already opened on this marker.
     if (infowindow.marker != marker) {
@@ -152,7 +174,7 @@ function initMap() {
           new google.maps.Size(21,34));
         return markerImage;
       }
-
+// function to return the styles array for styling the map
       function getStyles(){
         return styles = [
           {
@@ -221,6 +243,7 @@ function initMap() {
           }
         ];
       }
+      // function to display the erro message if Google Maps has an error
       function error(){
         alert("Error occured with Google Maps. Please try again.")
       }
